@@ -37,13 +37,29 @@ jobs:
       - name: Build project with Maven
         run: |
           cd HivisionIDPhotos-wechat-weapp  # 进入项目目录
-          mvn -B clean package
+          mvn -B -e -X clean package  # -e 显示详细错误信息，-X 显示调试信息
           if [ -d "target" ]; then
             chmod -R 777 target  # 如果 target 目录存在，修改其权限
           fi
 
+      - name: List files in target directory
+        run: |
+          cd HivisionIDPhotos-wechat-weapp
+          ls -l target
+
+      - name: Check if tag already exists
+        id: check_tag
+        run: |
+          TAG_EXISTS=$(git tag -l "${{ github.event.inputs.release_tag }}")
+          if [ -n "$TAG_EXISTS" ]; then
+            echo "tag_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "tag_exists=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Create Release
         id: create_release
+        if: steps.check_tag.outputs.tag_exists == 'false'
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -55,6 +71,7 @@ jobs:
 
       - name: Upload JAR as Release Asset
         id: upload-release-asset
+        if: steps.check_tag.outputs.tag_exists == 'false'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
