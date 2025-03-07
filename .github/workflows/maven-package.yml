@@ -37,8 +37,10 @@ jobs:
       - name: Build project with Maven
         run: |
           cd HivisionIDPhotos-wechat-weapp  # 进入项目目录
-          chmod -R 777 target  # 给 target 目录添加可写权限
           mvn -B clean package
+          if [ -d "target" ]; then
+            chmod -R 777 target  # 如果 target 目录存在，修改其权限
+          fi
 
       - name: Create Release
         id: create_release
