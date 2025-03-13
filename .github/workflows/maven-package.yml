@@ -18,15 +18,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 从指定仓库检出代码
       - name: Checkout code from specific repository
         uses: actions/checkout@v3
         with:
           repository: yejunping/HivisionIDPhotos-wechat-weapp
           path: HivisionIDPhotos-wechat-weapp  # 指定检出路径，避免路径嵌套
 
+      # 打印当前工作目录
       - name: Print current working directory
         run: pwd
 
+      # 设置 JDK 环境
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
@@ -34,6 +37,7 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      # 使用 Maven 构建项目
       - name: Build project with Maven
         run: |
           cd HivisionIDPhotos-wechat-weapp  # 进入项目目录
@@ -42,11 +46,13 @@ jobs:
             chmod -R 777 target  # 如果 target 目录存在，修改其权限
           fi
 
+      # 列出 target 目录下的文件
       - name: List files in target directory
         run: |
           cd HivisionIDPhotos-wechat-weapp
           ls -l target
 
+      # 检查标签是否已存在
       - name: Check if tag already exists
         id: check_tag
         run: |
@@ -57,6 +63,7 @@ jobs:
             echo "tag_exists=false" >> $GITHUB_OUTPUT
           fi
 
+      # 如果标签不存在，创建发布版本
       - name: Create Release
         id: create_release
         if: steps.check_tag.outputs.tag_exists == 'false'
@@ -69,6 +76,7 @@ jobs:
           draft: false
           prerelease: false
 
+      # 上传生成的 JAR 文件作为发布版本的资产
       - name: Upload JAR as Release Asset
         id: upload-release-asset
         if: steps.check_tag.outputs.tag_exists == 'false'
